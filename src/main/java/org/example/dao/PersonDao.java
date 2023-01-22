@@ -22,8 +22,8 @@ public class PersonDao {
 	private Connection con = null;
 
 	private void init() throws ClassNotFoundException, SQLException {
-		logger.info("Connecting to database");
-		Class.forName("com.mysql.jdbc.Driver");
+		logger.debug("Connecting to database");
+		Class.forName("com.mysql.cj.jdbc.Driver");
 		Properties properties = new Properties();
 		try {
 			ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -31,8 +31,8 @@ public class PersonDao {
 				properties.load(inputStream);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
-		}
+			logger.error("Exception: {}, caused: {}, at line: {}", e.getMessage(), e.getCause(),
+					e.getStackTrace()[0].getLineNumber());		}
 		logger.debug("dbUrl: {}, dbUsername: {}, dbPassword: {}", properties.getProperty("dbUrl"),
 				properties.getProperty("dbUsername"), properties.getProperty("dbPassword"));
 		con = DriverManager.getConnection(properties.getProperty("dbUrl"), properties.getProperty("dbUsername"),
@@ -42,7 +42,7 @@ public class PersonDao {
 	private void close() throws SQLException {
 		if (con != null) {
 			con.close();
-			logger.info("Closing the connection");
+			logger.debug("Closing the connection");
 		}
 	}
 
