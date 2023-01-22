@@ -13,12 +13,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.example.entity.Person;
 
 public class PersonDao {
+	private static final Logger logger = LogManager.getLogger(PersonDao.class);
 	private Connection con = null;
 
 	private void init() throws ClassNotFoundException, SQLException {
+		logger.info("Connecting to database");
 		Class.forName("com.mysql.jdbc.Driver");
 		Properties properties = new Properties();
 		try {
@@ -29,6 +33,8 @@ public class PersonDao {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		logger.debug("dbUrl: {}, dbUsername: {}, dbPassword: {}", properties.getProperty("dbUrl"),
+				properties.getProperty("dbUsername"), properties.getProperty("dbPassword"));
 		con = DriverManager.getConnection(properties.getProperty("dbUrl"), properties.getProperty("dbUsername"),
 				properties.getProperty("dbPassword"));
 	}
@@ -36,6 +42,7 @@ public class PersonDao {
 	private void close() throws SQLException {
 		if (con != null) {
 			con.close();
+			logger.info("Closing the connection");
 		}
 	}
 
@@ -48,10 +55,11 @@ public class PersonDao {
 			ps.setInt(3, person.getAge());
 			ps.setString(4, person.getMobileNumber());
 			ps.execute();
-			System.out.println("Person " + person + " got successfully inserted into the table");
+			logger.info("Person {} got successfully inserted into the table", person);
 			close();
 		} catch (ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
+			logger.error("Exception: {}, caused: {}, at line: {}", e.getMessage(), e.getCause(),
+					e.getStackTrace()[0].getLineNumber());
 		}
 	}
 
@@ -69,7 +77,8 @@ public class PersonDao {
 			}
 			close();
 		} catch (ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
+			logger.error("Exception: {}, caused: {}, at line: {}", e.getMessage(), e.getCause(),
+					e.getStackTrace()[0].getLineNumber());
 		}
 		return Optional.ofNullable(persons);
 	}
@@ -84,10 +93,11 @@ public class PersonDao {
 			ps.setString(3, person.getMobileNumber());
 			ps.setLong(4, person.getId());
 			ps.execute();
-			System.out.println("Person " + person + " got updated");
+			logger.info("Person {} got updated", person);
 			close();
 		} catch (ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
+			logger.error("Exception: {}, caused: {}, at line: {}", e.getMessage(), e.getCause(),
+					e.getStackTrace()[0].getLineNumber());
 		}
 	}
 
@@ -97,10 +107,11 @@ public class PersonDao {
 			PreparedStatement ps = con.prepareStatement("DELETE FROM person WHERE id = ?");
 			ps.setLong(1, person.getId());
 			ps.execute();
-			System.out.println("Person " + person + " got deleted");
+			logger.info("Person {} got deleted", person);
 			close();
 		} catch (ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
+			logger.error("Exception: {}, caused: {}, at line: {}", e.getMessage(), e.getCause(),
+					e.getStackTrace()[0].getLineNumber());
 		}
 	}
 
@@ -109,10 +120,11 @@ public class PersonDao {
 			init();
 			Statement stmt = con.createStatement();
 			stmt.execute("TRUNCATE TABLE person");
-			System.out.println("Deleted all the data from person");
+			logger.info("Deleted all the data from person");
 			close();
 		} catch (ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
+			logger.error("Exception: {}, caused: {}, at line: {}", e.getMessage(), e.getCause(),
+					e.getStackTrace()[0].getLineNumber());
 		}
 	}
 }
